@@ -1,0 +1,285 @@
+#include<iostream> 
+#include<fstream> 
+#include <locale> 
+
+using namespace std;
+
+class HigherEducationInstitution {
+protected:
+    string name;
+
+public:
+    HigherEducationInstitution(const string& name) : name(name) {} // инициализатор члена
+
+    virtual void printInfo() const {
+        cout << "Высшее учебное заведение: " << name << endl;
+    }
+};
+
+class University : public HigherEducationInstitution {
+private:
+    string city;
+public:
+    University(const string& name, const string& city)
+        : HigherEducationInstitution(name), city(city) {}
+
+    string getCity() const {
+        return city;
+    }
+
+    void setCity(const string& city) { // устанавливает
+        this->city = city;
+    }
+
+    void printInfo() const override {
+        cout << "Университет: " << name << ", Город: " << city << endl;
+    }
+};
+
+class College : public HigherEducationInstitution {
+private:
+    string specialization;
+
+public:
+    College(const string& name, const string& specialization)
+        : HigherEducationInstitution(name), specialization(specialization) {}
+
+    string getSpecialization() const {
+        return specialization;
+    }
+
+    void setSpecialization(const string& specialization) {
+        this->specialization = specialization;
+    }
+
+    void printInfo() const override {
+        cout << "Колледж: " << name << ", Специализация: " << specialization << endl;
+    }
+};
+
+template <typename T>
+class Institute : public HigherEducationInstitution
+{
+private:
+    T field;
+
+public:
+    Institute(const string& name, const T& field)
+        : HigherEducationInstitution(name), field(field) {}
+
+    T getField() const {
+        return field;
+    }
+
+    void setField(const T& field) {
+        this->field = field;
+    }
+
+    void printInfo() const override {
+        cout << "Институт: " << name << ", Поле: " << field << endl;
+    }
+};
+
+
+class Student {
+private:
+    string name;
+    int age;
+    string major;
+
+public:
+    Student(const string& name, int age, const string& major)
+        : name(name), age(age), major(major) {}
+
+    Student() {
+        name = "";
+        age = 0;
+        major = "";
+    }
+
+    string getName() const {
+        return name;
+    }
+
+    void setName(const string& name) {
+        this->name = name;
+    }
+
+    int getAge() const {
+        return age;
+    }
+
+    void setAge(int age) {
+        this->age = age;
+    }
+
+    string getMajor() const {
+        return major;
+    }
+
+    void setMajor(const string& major) {
+        this->major = major;
+    }
+
+    void printInfo() const {
+        cout << "Студент: " << name << " Возраст: " << age << " Специальность: " << major << endl;
+    }
+};
+
+
+class Session {
+private:
+    Student* students;
+    string employeeNames;
+    int* grades;
+    int numStudents;
+
+public:
+    Session(Student* students, const string& employeeNames, int* grades, int numStudents)
+        : students(students), employeeNames(employeeNames), grades(grades), numStudents(numStudents) {}
+
+    ~Session() {
+        delete[] students;
+        delete[] grades;
+    }
+
+    void printStudentInfo(const Student& student) const {
+        student.printInfo();
+    }
+
+    void printSessionResults() const {
+        cout << "Итоги сессии:" << endl;
+
+        cout << "---------------------------------------------------------" << endl;
+        cout << "Имя студента | Возраст | Специальность | Оценка" << endl;
+        cout << "---------------------------------------------------------" << endl;
+
+        for (int i = 0; i < numStudents; i++) {
+            cout << students[i].getName() << "      |      " << students[i].getAge() << "      |     "
+                << students[i].getMajor() << "     |      " << grades[i] << endl;
+        }
+
+        cout << "---------------------------------------------------------" << endl;
+    }
+
+    void saveSessionResultsToFile(const string& filename) const {
+        ofstream file(filename);
+
+        if (!file) {
+            cout << "Ошибка открытия файла." << endl;
+            return;
+        }
+            file << "Итоги сессии:" << endl;
+        file << "---------------------------------------------------------" << endl;
+        file << "Имя студента | Возраст | Специальность | Оценка" << endl;
+        file << "---------------------------------------------------------" << endl;
+
+        for (int i = 0; i < numStudents; i++) {
+            file << students[i].getName() << "      |      " << students[i].getAge() << "      |      "
+                << students[i].getMajor() << "     |      " << grades[i] << endl;
+        }
+
+        file << "---------------------------------------------------------" << endl;
+
+        file.close();
+
+        cout << "Итоги сессии сохранены в файле " << endl;
+    }
+};
+
+int main() {
+    setlocale(LC_ALL, "rus");
+
+    string universityName, universityCity;
+    cout << "Введите название университета: ";
+    cin >> universityName;
+    cout << "Введите город университета: ";
+    cin >> universityCity;
+
+    University university(universityName, universityCity);
+
+    string collegeName, collegeSpecialization;
+    cout << "Введите название колледжа: ";
+    cin >> collegeName;
+    cout << "Введите специализацию колледжа: ";
+    cin >> collegeSpecialization;
+
+    College college(collegeName, collegeSpecialization);
+
+    string instituteName, instituteField;
+    cout << "Введите название института: ";
+    cin >> instituteName;
+    cout << "Введите поле института: ";
+    cin >> instituteField;
+
+    Institute<string> institute(instituteName, instituteField);
+
+    university.printInfo();
+    college.printInfo();
+    institute.printInfo();
+
+    string studentName, studentMajor;
+    int studentAge;
+
+    cout << "Введите информацию о первом студенте:" << endl;
+    cout << "Имя: ";
+    cin >> studentName;
+    cout << "Возраст: ";
+    cin >> studentAge;
+    cin.ignore();
+    cout << "Специальность: ";
+    cin >> studentMajor;
+
+    Student student1(studentName, studentAge, studentMajor);
+
+    cout << "Введите информацию о втором студенте:" << endl;
+    cout << "Имя: ";
+    cin >> studentName;
+    cout << "Возраст: ";
+    cin >> studentAge;
+    cin.ignore();
+    cout << "Специальность: ";
+    cin >> studentMajor;
+
+    Student student2(studentName, studentAge, studentMajor);
+
+    cout << "Введите информацию о третьем студенте:" << endl;
+    cout << "Имя: ";
+    cin >> studentName;
+    cout << "Возраст: ";
+    cin >> studentAge;
+    cin.ignore();
+    cout << "Специальность: ";
+    cin >> studentMajor;
+
+    Student student3(studentName, studentAge, studentMajor);
+
+    student1.printInfo();
+    student2.printInfo();
+    student3.printInfo();
+
+    Student* students = new Student[3];
+    students[0] = student1;
+    students[1] = student2;
+    students[2] = student3;
+
+    int* grades = new int[3];
+
+    cout << "Введите оценки для каждого студента:" << endl;
+    for (int i = 0; i < 3; i++) {
+        cout << "Оценка студента " << students[i].getName() << ": ";
+        cin >> grades[i];
+        cin.ignore();
+    }
+
+    Session session(students, "Сотрудники деканата", grades, 3);
+
+    session.printStudentInfo(student1);
+    session.printSessionResults();
+    session.saveSessionResultsToFile("results.txt");
+
+    delete[] students;
+    delete[] grades;
+
+    return 0;
+}
