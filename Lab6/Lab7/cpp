@@ -1,0 +1,523 @@
+
+#include <iostream>
+#include <vector>
+#include <memory>
+#include <fstream>
+#include <windows.h>
+#include <string>
+#include <iomanip>
+
+using namespace std;
+
+class Product
+{
+private:
+    string prod_name;
+    double price;
+    int amount;
+
+public:
+    Product() = default;
+
+    Product(const std::string& productName, double productPrice, int productQuantity)
+    {
+        this->prod_name = productName;
+        this->price = productPrice;
+        this->amount = productQuantity;
+    }
+
+
+    Product(const Product& other)
+    {
+        this->prod_name = other.prod_name;
+        this->price = other.price;
+        this->amount = other.amount;
+    }
+
+
+    void SetName(const std::string& productName)
+    {
+        prod_name = productName;
+    }
+
+    void SetPrice(double productPrice)
+    {
+        price = productPrice;
+    }
+
+    void SetQuantity(int productQuantity)
+    {
+        amount = productQuantity;
+    }
+
+    string GetName() const
+    {
+        return prod_name;
+    }
+
+    double GetPrice() const
+    {
+        return price;
+    }
+
+    int GetQuantity() const
+    {
+        return amount;
+    }
+
+    void PrintInfo() const
+    {
+        cout << "*******************************" << endl;
+        cout << "Товар:      " << setw(10) << prod_name << endl;
+        cout << "*******************************" << endl;
+        cout << "Цена:       " << setw(10) << price << endl;
+        cout << "*******************************" << endl;
+        cout << "Количество: " << setw(10) << amount << endl;
+        cout << "*******************************" << endl;
+    }
+
+    double GetTotalPrice() const
+    {
+        return price * amount;
+    }
+};
+
+
+
+class Equipment
+{
+private:
+    string eq_name;
+    double price;
+
+public:
+    Equipment() = default;
+
+    Equipment(const string& equipmentName, double equipmentPrice)
+    {
+        this->eq_name = equipmentName;
+        this->price = equipmentPrice;
+    }
+
+
+    Equipment(const Equipment& other)
+    {
+        this->eq_name = other.eq_name;
+        this->price = other.price;
+    }
+
+
+    void SetName(const string& equipmentName)
+    {
+        eq_name = equipmentName;
+    }
+
+    void SetPrice(double equipmentPrice)
+    {
+        price = equipmentPrice;
+    }
+
+    string GetName() const
+    {
+        return eq_name;
+    }
+
+    double GetPrice() const
+    {
+        return price;
+    }
+
+    void PrintInfo() const
+    {
+        cout << "*******************************" << endl;
+        cout << "Оборудование: " << setw(10) << eq_name << endl;
+        cout << "*******************************" << endl;
+        cout << "Цена:         " << setw(10) << price << endl;
+        cout << "*******************************" << endl;
+    }
+};
+
+
+
+class Enterprise
+{
+protected:
+    string name;
+    vector<Product> products;
+    vector<Equipment> equipments;
+
+
+public:
+    Enterprise() = default;
+
+    Enterprise(const string& enterpriseName)
+    {
+        this->name = enterpriseName;
+    }
+
+    virtual ~Enterprise() = default;
+
+    void SetName(const string& enterpriseName)
+    {
+        name = enterpriseName;
+    }
+
+    string GetName() const
+    {
+        return name;
+    }
+
+    void PrintInfo_prod()
+    {
+        cout << "\t\tАссортимент товаров:\n";
+        for (Product& product : products)
+        {
+            cout << "*******************************" << endl;
+            cout << "Товар:      " << setw(10) << product.GetName() << endl;
+            cout << "*******************************" << endl;
+            cout << "Цена:       " << setw(10) << product.GetPrice() << endl;
+            cout << "*******************************" << endl;
+            cout << "Количество: " << setw(10) << product.GetQuantity() << endl;
+            cout << "*******************************" << endl;
+        }
+    }
+
+        void printInfo_eq()
+    {
+        cout << "\t\tИмеющееся оборудование :\n";
+        for (const Equipment& equipment : equipments)
+        {
+            cout << "\t*****************************\n";
+            cout << "\tНазвание:\t" << equipment.GetName() << endl;
+            cout << "\t*****************************\n";
+            cout << "\tЦена:\t" << equipment.GetPrice() << endl;
+            cout << "\t*****************************\n";
+        }
+    }
+
+
+    void addProduct(const Product& product)
+    {
+        products.push_back(product);
+    }
+
+    void addEquipment(const Equipment& equipment)
+    {
+        equipments.push_back(equipment);
+    }
+};
+
+template <typename T>
+class Transaction
+{
+private:
+    vector<T> transactions;
+
+public:
+    Transaction() = default;
+
+    Transaction(const std::vector<T>& transactionList) 
+        this->transactions = transactionList;
+    }
+
+
+    void AddTransaction(const T& transaction)
+    {
+        transactions.push_back(transaction);
+    }
+
+    void Rollback() 
+    {
+        if (!transactions.empty())
+        {
+            transactions.pop_back();
+        }
+    }
+
+    void PrintInfo() const
+    {
+        cout << "Транзакции: " << endl;
+        cout << "-------------------------" << endl;
+        for (const auto& transaction : transactions)
+        {
+            transaction.PrintInfo();
+        }
+        cout << "-------------------------" << endl;
+    }
+};
+
+
+class MachineFactory : public Enterprise
+{
+private:
+    vector<shared_ptr<Product>> products;
+    string name;
+    vector<Transaction<Product>> productsTransaction;
+    vector<Transaction<Equipment>> equipmentsTransaction;
+
+public:
+    MachineFactory() = default;
+
+    MachineFactory(const string& companyName) : Enterprise(companyName) {}
+
+    MachineFactory(const MachineFactory& other)
+        : Enterprise(other), products(other.products) {}
+
+    void AddProduct(const shared_ptr<Product>& product)
+    {
+        products.push_back(product);
+    }
+
+
+    void AddProductTransaction(const Transaction<Product>& transaction)
+    {
+        productsTransaction.push_back(transaction);
+    }
+
+    void AddEquipmentTransaction(const Transaction<Equipment>& transaction)
+    {
+        equipmentsTransaction.push_back(transaction);
+    }
+
+    void PrintTransactionInfo() const
+    {
+        cout << "Информация о транзакциях с товарами:" << endl;
+        for (const auto& transaction : productsTransaction)
+        {
+            transaction.PrintInfo();
+        }
+
+        cout << "Информация о транзакциях с оборудованием:" << endl;
+        for (const auto& transaction : equipmentsTransaction)
+        {
+            transaction.PrintInfo();
+        }
+    }
+
+    double GetTotalPrice()
+    {
+        double total = 0.0;
+        for (auto& product : products)
+        {
+            total += product->GetTotalPrice();
+        }
+        return total;
+    }
+};
+
+
+
+void add_to_file(string filename, string record)
+{
+    ofstream file(filename, ios::app);
+    if (file.is_open())
+    {
+        file << record << endl;
+        file.close();
+        cout << "Запись добавлена в файл" << endl;
+    }
+    else
+    {
+        cout << "Нельзя открыть файл" << endl;
+    }
+}
+
+void read_file(string filename, string record)
+{
+    ifstream file(filename, ios::in);
+    if (file.is_open())
+    {
+        while (getline(file, record))
+        {
+            cout << record << endl;
+        }
+
+    }
+    file.close();
+}
+
+void if_bykovka(int& b)
+{
+    while (cin.fail())
+    {
+        cin.clear();
+        cin.ignore();
+        cout << "Вы ввели букву. Попробуйте ещё раз." << endl;
+        cin >> b;
+    }
+}
+
+int main()
+{
+
+    SetConsoleOutputCP(1251);
+    SetConsoleCP(1251);
+
+    string filename;
+    cout << "Введите имя файла для записи: ";
+    cin >> filename;
+
+
+    string record = "---СПИСОК ВСЕГО---";
+        while (true)
+        {
+            cout << "Выберите действие" << endl;
+            cout << "1. Добавить предприятие" << endl;
+            cout << "2. Добавить всю информацию в файл" << endl;
+            cout << "3. Вывести всю информацию" << endl;
+            cout << "0. Завершение работы" << endl;
+            cout << "Ваш выбор: ";
+
+            int choice;
+            cin >> choice;
+            if_bykovka(choice);
+
+            if (choice < 0)
+            {
+                cout << "Ваш выбор не может быть отрицательным числом" << endl;
+                continue;
+            }
+
+            if (choice == 0)
+            {
+                break;
+            }
+
+            if (choice == 1)
+            {
+                string name;
+                cout << "Введите название предприятия\n";
+                cin.ignore();
+                getline(cin, name);
+
+
+                MachineFactory factory(name);
+
+                while (true)
+                {
+                    cout << "1. Добавить транзакцию" << endl;
+                    cout << "2. Вывести информацию о всех транзакциях" << endl;
+                    cout << "0. В главное меню" << endl;
+                    cout << "Ваш выбор: ";
+                    int ch;
+                    cin >> ch;
+                    if_bykovka(ch);
+                    if (ch < 0)
+                    {
+                        cout << "Ваш выбор не может быть отрицательным числом" << endl;
+                        continue;
+                    }
+                    if (ch == 0)
+                    {
+                        break;
+                    }
+                    else if (ch == 1)
+                    {
+                        vector<Product> transactionProducts;
+                        vector<Equipment> transactionEquipments;
+
+                        while (true)
+                        {
+                            cout << "1. Добавить товар в транзакцию" << endl;
+                            cout << "2. Добавить оборудование в транзакцию" << endl;
+                            cout << "0. Завершить транзакцию" << endl;
+                            cout << "Ваш выбор: ";
+
+                            int transChoice;
+                            cin >> transChoice;
+                            if_bykovka(transChoice);
+
+                            if (transChoice < 0)
+                            {
+                                cout << "Ваш выбор не может быть отрицательным числом" << endl;
+                                continue;
+                            }
+
+                            if (transChoice == 0)
+                            {
+                                break;
+                            }
+
+                            if (transChoice == 1)
+                            {
+                                string prod_name;
+                                double price;
+                                int amount;
+
+                                cout << "Введите название товара: ";
+                                cin.ignore();
+                                getline(cin, prod_name);
+                                cout << "Введите цену товара: ";
+                                cin >> price;
+                                cout << "Введите количество товара: ";
+                                cin >> amount;
+
+                                record += "\t*******************************\n";
+                                record += "\tТовар:      " + prod_name + "\n";
+                                record += "\t*******************************\n";
+                                record += "\tЦена:       " + to_string(price) + "\n";
+                                record += "\t*******************************\n";
+                                record += "\tКоличество: " + to_string(amount) + "\n";
+                                record += "\t*******************************\n";
+
+
+                                Product product(prod_name, price, amount);
+                                transactionProducts.push_back(product);
+                            }
+                            else if (transChoice == 2)
+                            {
+                                string eq_name;
+                                double price;
+
+                              
+                                    cout << "Введите название оборудования: ";
+                                cin.ignore();
+                                getline(cin, eq_name);
+                                cout << "Введите цену оборудования: ";
+                                cin >> price;
+
+                                record += "\t**************************\n";
+                                record += "\tОборудование:\t" + eq_name + "\n";
+                                record += "\t**************************\n";
+                                record += "\tЦена:\t\t" + to_string(price) + "\n";
+                                record += "\t**************************\n";
+
+                                Equipment equipment(eq_name, price);
+                                transactionEquipments.push_back(equipment);
+                            }
+                            else
+                            {
+                                cout << "Некорректный выбор" << endl;
+                            }
+                        }
+
+                        Transaction<Product> productTransaction(transactionProducts);
+                        Transaction<Equipment> equipmentTransaction(transactionEquipments);
+
+                        factory.AddProductTransaction(productTransaction);
+                        factory.AddEquipmentTransaction(equipmentTransaction);
+                    }
+                    else if (ch == 2)
+                    {
+                        factory.PrintTransactionInfo();
+                    }
+                }
+
+            }
+            else if (choice == 2)
+            {
+                add_to_file(filename, record);
+            }
+            else if (choice == 3)
+            {
+                string record;
+                read_file(filename, record);
+            }
+
+
+
+
+        }
+
+    return 0;
+}
