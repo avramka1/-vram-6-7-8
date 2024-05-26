@@ -1,0 +1,210 @@
+#include <iostream> 
+#include <string> 
+#include <Windows.h> 
+#include<exception> 
+
+using namespace std;
+
+class AthleteException : public exception {
+private:
+    string errorMessage;
+
+public:
+
+    AthleteException() {}
+
+    AthleteException(const string& message)
+        : errorMessage(message) {}
+
+    const char* what() const throw() { 
+        return errorMessage.c_str();
+    }
+
+    void Terminate() {
+        cout << "Произошла ошибка. Выполняется завершение программы." << endl;
+        exit(1);
+    }
+};
+
+class InvalidAgeException : public exception {
+public:
+    const char* what() const throw() {
+        return "Некорректный возраст.";
+    }
+};
+
+class Athlete {
+protected:
+    string name;
+    int age;
+
+public:
+    Athlete(const string& name, int age) {
+        if (name.empty()) {
+            throw AthleteException("Имя спортсмена не может быть пустым.");
+        }
+
+        if (age <= 0 || age > 150) {
+            throw InvalidAgeException();
+        }
+
+        this->age = age; 
+        this->name = name;
+    }
+
+    virtual void PrintInfo() const {
+        cout << "Имя: " << name << endl;
+        cout << "Возраст: " << age << endl;
+    }
+};
+
+class TrackAndFieldAthlete : public Athlete {
+private:
+    string discipline;
+
+public:
+    TrackAndFieldAthlete(const string& name, int age, const string& discipline)
+        : Athlete(name, age), discipline(discipline) {}
+
+    void PrintInfo() const override {
+        cout << "Спортсмен по легкой атлетике" << endl;
+        cout << "Имя: " << name << endl;
+        cout << "Возраст: " << age << endl;
+        cout << "Дисциплина: " << discipline << endl;
+    }
+};
+
+
+class Swimmer : public Athlete {
+private:
+    string style;
+
+public:
+    Swimmer(const string& name, int age, const string& style)
+        : Athlete(name, age), style(style) {}
+
+    void PrintInfo() const override {
+        cout << "Пловец" << endl;
+        cout << "Имя: " << name << endl;
+        cout << "Возраста: " << age << endl;
+        cout << "Стиль: " << style << endl;
+    }
+};
+
+
+class FootballPlayer : public Athlete {
+private:
+    string position;
+
+public:
+    FootballPlayer(const string& name, int age, const string& position)
+        : Athlete(name, age), position(position) {}
+
+    void PrintInfo() const override {
+        cout << "Футболист" << endl;
+        cout << "Имя: " << name << endl;
+        cout << "Возраст: " << age << endl;
+        cout << "Позиция: " << position << endl;
+    }
+};
+
+
+class NationalTeam {
+private:
+    string country;
+    Athlete* athletes[5];
+
+public:
+    NationalTeam(const string& country)
+        : country(country) {
+        for (int i = 0; i < 5; i++) {
+            athletes[i] = nullptr;
+        }
+    }
+
+    void AddAthlete(Athlete* athlete) {
+        for (int i = 0; i < 5; i++) {
+            if (athletes[i] == nullptr) {
+                athletes[i] = athlete; 
+                break;
+            }
+        }
+    }
+
+    void PrintTeamInfo() const {
+        cout << "Страна: " << country << endl;
+        cout << "Члены команды:" << endl;
+        for (int i = 0; i < 5; i++) {
+            if (athletes[i] != nullptr) {
+                athletes[i]->PrintInfo();
+                cout << endl;
+            }
+        }
+    }
+};
+
+int main() {
+    setlocale(0, "rus");
+    SetConsoleOutputCP(65001);
+    string country;
+    cout << "Введите название страны: ";
+    cin >> country;
+
+    cout << "Добавление атлетов в национальную команду." << endl;
+
+    try { 
+        NationalTeam team(country);
+
+        string name;
+        int age;
+        string discipline;
+        string style;
+
+
+            for (int i = 0; i < 2; ++i) {
+                cout << "Введите имя легкоатлета: ";
+                cin >> name;
+                cout << "Введите возраст: ";
+                cin >> age;
+                cout << "Введите дисциплину: ";
+                cin.ignore();
+                cin >> discipline;
+                TrackAndFieldAthlete* trackAndFieldAthlete = new TrackAndFieldAthlete(name, age, discipline); 
+                team.AddAthlete(trackAndFieldAthlete);
+            }
+
+        for (int i = 0; i < 3; ++i) {
+            cout << "Введите имя пловца: ";
+            cin >> name;
+            cout << "Введите возраст: ";
+            cin >> age;
+            cout << "Введите стиль плавания: ";
+            cin.ignore();
+            cin >> style;
+
+            Swimmer* swimmer = new Swimmer(name, age, style);
+            team.AddAthlete(swimmer);
+        }
+
+        cout << endl;
+        cout << "Информация о национальной команде:" << endl;
+        team.PrintTeamInfo();
+    }
+    catch (const AthleteException& exception) { 
+        cout << "Ошибка: " << exception.what() << endl;
+        AthleteException myException;
+        myException.Terminate();
+    }
+    catch (const InvalidAgeException& exception) {
+        cout << "Ошибка ввода возраста: " << exception.what() << endl;
+        AthleteException myException;
+        myException.Terminate();
+    }
+    catch (const bad_alloc& exception) { 
+        cout << "Ошибка выделения памяти: " << exception.what() << endl;
+        AthleteException myException;
+        myException.Terminate();
+    }
+
+    return 0;
+}
